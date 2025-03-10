@@ -2,11 +2,11 @@ import csv
 import os
 
 customer_accounts = [
-    { 'account_id': 10001 ,  'frst_name': 'suresh',   'last_name': 'sigera','password': 'juagw362', 'balance_checking' : 1000, 'balance_savings': 10000 },
-    { 'account_id': 10002 , 'frst_name': 'james',  'last_name': 'taylor','password': 'idh36%@#FGd', 'balance_checking' : 10000, 'balance_savings': 10000 },
+    { 'account_id': 10001 ,  'first_name': 'suresh',   'last_name': 'sigera','password': '1234', 'balance_checking' : 1000, 'balance_savings': 10000 },
+    { 'account_id': 10002 , 'first_name': 'james',  'last_name': 'taylor','password': 'idh36%@#FGd', 'balance_checking' : 10000, 'balance_savings': 10000 },
     ]
 
-fieldnames = ["account_id", "frst_name", "last_name", "password", "balance_checking", "balance_savings"]
+fieldnames = ["account_id", "first_name", "last_name", "password", "balance_checking", "balance_savings"]
 
 if not os.path.exists("./banck.csv"):
     with open("./banck.csv", 'w', newline='') as csvfile:
@@ -41,7 +41,7 @@ class Customer():
         self.balance_checking = None
         self.balance_savings = None
         self.account_id = 10002 #try use random and chech if it exist for the id
-        self.loged_in = False
+        self.logged_in = False
         self.current_useer = None
 
     def add_customer(self,new_account, fname, lname, password):
@@ -56,7 +56,7 @@ class Customer():
         
         try:
             self.account_id += 1
-            new_row = {'account_id': self.account_id, 'frst_name': self.first_name, 'last_name': self.last_name, 'password': self.password,  'balance_checking': self.balance_checking, 'balance_savings': self.balance_savings}
+            new_row = {'account_id': self.account_id, 'first_name': self.first_name, 'last_name': self.last_name, 'password': self.password,  'balance_checking': self.balance_checking, 'balance_savings': self.balance_savings}
             customer_accounts.append(new_row)
             with open("banck.csv", "a+") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -65,30 +65,75 @@ class Customer():
         except csv.Error as e:
             print(e)
     
+    @classmethod
     def log_in(self):
         user_name = input('enter your usre name: ')
         user_password = input('enter your paswword: ')
 
         for user in customer_accounts:
-            print(user['frst_name'], user['password'])
-            if user['frst_name'] == user_name and user['password'] == user_password:
+            if user['first_name'] == user_name and user['password'] == user_password:
+                print(user['first_name'], user['password'])
                 self.current_useer = user['account_id']
-                self.loged_in = True
+                self.logged_in = True
+                return
+        
+        print("Invalid username or password. Please try again.")
+
+# class checking_account(Customer):
+# class savings_account(Customer):
+# class checking_and_savings_account(Customer):
+
+
+class Deposit(Customer):
+    @classmethod
+    def check_account(self):
+        if not self.logged_in:
+            print("You need to log in first!")
+            return
+
+        deposit_amount = float(input("Enter the amount of mony to be add: "))
+
+        for user in customer_accounts:
+            if user['account_id'] == self.current_useer:
+
+                Deposit_type = int(input("Deposit into (1) Checking or (2) Savings? "))
+                
+                if Deposit_type == 1:
+                    user['balance_checking'] += deposit_amount
+
+                elif Deposit_type == 2:
+                    user['balance_savings'] += deposit_amount
+
+                else:
+                    print("Invalid selection!")
+                    return
+                
+                print("Deposit successful! Updated balance:", user)
+                return
+    
+
 
 class Withdraw(Customer):
 
-    def check_account(self):
+    def Withdraw_operation(self):
+        if not self.logged_in:
+            print("You need to log in first!")
+            return
 
-        if self.balance_checking != 0 and self.loged_in:
+        if self.balance_checking != 0 and self.logged_in:
             Withdraw_amount = input("ente the amount of mony to be draw: ")
             for user in customer_accounts:
+                if user['account_id'] == self.current_useer:
+                    
+                    Deposit_type = int(input("Deposit into (1) Checking or (2) Savings? "))
+                if Deposit_type == 1:
+                    user['balance_checking'] -= Withdraw_amount
+                elif Deposit_type == 2:
+                    user['balance_savings'] -= Withdraw_amount
+                else:
+                    print("Invalid selection!")
+                    return
                 
-
-
-
-
-class Deposit():
-    pass
 
 class Transfer():
     pass
@@ -103,11 +148,13 @@ class Transfer():
 # user = Customer(new_account, fname, lname, password)
 # user.add_customer(user.account_type ,user.first_name,user.last_name,user.password)
 
-user = Customer(1, "noura", "almutairi", "12345")
+
+# user = Customer(1, "noura", "almutairi", "12345")
 account = input("do you have account? y/n")
-if account == 'y':
-    user.log_in()
-    print(user.loged_in)
+
+Customer.log_in()
+# print(user.logged_in)
+Deposit.check_account()
 
 
 
