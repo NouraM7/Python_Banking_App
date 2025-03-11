@@ -1,5 +1,6 @@
 import csv
 import os
+import random
 
 customer_accounts = [
     { 'account_id': 10001 ,  'first_name': 'suresh',   'last_name': 'sigera','password': '1234', 'checking' : 20, 'savings': 10000 },
@@ -36,46 +37,57 @@ class Error(Exception):
 class LoggedInError(Error):
     pass
 
+class ActivationError(Error):
+    pass
+
 class Customer:
 
     def __init__(self, first_name, last_name, password):
-        self.account_type = None
+        # self.account_type = None
         self.first_name = first_name
         self.last_name = last_name
         self.password = password
-        self.checking = None
-        self.savings = None
-        self.account_id = 10002 #try use random and check if it exist for the id
+        # self.checking = None
+        # self.savings = None
+        self.account_id = random.randrange(10002, 99999) #try use random and check if it exist for the id
         self.is_logged_in = False
         self.current_useer = None
+        self.is_active = False
     
     def check_logged_in(self):
         print("checkin logged in")
         return True if not self.is_logged_in else False
 
-    def add_customer(self,obj):
-        if check_logged_in():
-            raise LoggedInError
+    def check_activation_in(self):
+        print("checkin activation ")
+        return True if not self.is_active else False
 
-        if new_account == 1:
-            self.checking = 0
-        elif new_account == 2:
-            self.savings = 0
-        else:
-            self.checking = 0
-            self.savings = 0
-        
+    def add_customer(self,obj):
+        # if check_logged_in():
+        #     raise LoggedInError
+
         try:
-            self.account_id += 1
             new_row = {'account_id': self.account_id,
                 'first_name': self.first_name,
                 'last_name': self.last_name,
                 'password': self.password,
-                'checking': self.checking,
-                'savings': self.savings
                 }
 
+            # self.account_id = random.randrange(10002, 99999)# check if the number exist
+
+            new_acc = input("choose your account type (1) checking (2) saving (3) checking and saving : ")
+
+            if new_acc == '1':
+                new_row['checking'] = 0
+            elif new_acc == '2':
+                new_row['savings'] = 0
+            else:
+                new_row['checking'] = 0
+                new_row['savings'] = 0
+
             customer_accounts.append(new_row)
+            self.is_active = True
+
             with open("banck.csv", "a+") as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writerow(new_row)
@@ -83,8 +95,8 @@ class Customer:
         except csv.Error as e:
             print(e)
 
-    def add_money(self):
-        Bank.add_money()
+    # def add_money(self):
+    #     Bank.add_money()
     
     def log_out(self):
         pass
@@ -136,35 +148,50 @@ class Withdraw(Customer):
 
     def Withdraw_operation(self):
 
-        if check_logged_in():
+        if self.check_logged_in():
             raise LoggedInError
+        if self.is_active():
+            raise ActivationError
         for user in customer_accounts:
             # print(self.current_useer)
             if user['account_id'] == self.current_useer:
-                Withdraw_type = int(input("Withdraw into (1) Checking or (2) Savings? "))
-                Withdraw_amount = float(input("Ente the amount of mony to be deposit: "))
-                if Withdraw_type == 1:
-                    if user['checking'] < 0 and Withdraw_amount >100: 
-                        print ("invalid operation! your account balance is negative, you can not draw more than 100$!")
-                    
-                    elif user['checking'] < Withdraw_amount:
-                        user['checking'] -= Withdraw_amount
-                        user['checking'] -= 35
-                        print("Overdraft! 35 has been charge from your account")  
-                    else:
-                        user['checking'] -= Withdraw_amount
 
-                    print("Deposit successful! Updated balance:", user)
-                    return
-                elif Withdraw_type == 2:
-                    if self.checking < 0 and Withdraw_amount <= 100: 
-                        user['savings'] -= Withdraw_amount
+                Withdraw_type = { "1": "checking", "2": "savings" }
+                overdraft = 0
+
+                while True:
+                    Withdraw_from = input(f"Withdraw from (1) {Withdraw_type["1"]} or (2) {Withdraw_type["2"]}? ")
+                    Withdraw_amt = float(input("Ente the amount of mony to be deposit: "))
+                    if Withdraw_from == '1' or Withdraw_from == '2':
+                        if user[Withdraw_type[Withdraw_from]] > 0 or  Withdraw_amt <=  100: 
+                            if Withdraw_amt <= 100:
+                                if overdraft < 2:
+                                    if user[Withdraw_type[Withdraw_from]] < Withdraw_amt:
+                                        user[Withdraw_type[Withdraw_from]] -= (Withdraw_amt + 35)
+                                        overdraft += 1
+                                        print("Overdraft occurs! 35 has been charge from your account", user, "the overdraft is : ", overdraft) 
+                                        # return 
+                                        continue
+                                    else: 
+                                        user[Withdraw_type[Withdraw_from]] -= Withdraw_amt
+                                        print("Deposit successful! Updated balance:", user)
+                                        #return
+                                        continue
+                                else:
+                                    print("Two overdraft occurs, your account has ben deactivated!")
+                                    self.is_active = False
+                                    return
+                                    # continue
+                            else:
+                                print("invalid operation! you can not Withdraw more than 100$ in one transaction")
+                                continue
+                        else:
+                            print ("invalid operation! your account balance is negative, you can not draw more than 100$!")
+                            return
                     else:
-                        print ("invalid operation! your account balance is negative, you can not draw more than 100$!")
-                else:
-                    print("Invalid selection!")
-                    return
-                
+                        print("Invalid selection! try again")
+                        continue
+                           
 class Transfer(Customer):
     def Transfer_operation(self):
         if check_logged_in():
@@ -207,29 +234,36 @@ class Transfer(Customer):
 
 
 
-# new_account = input('what kind of account you want to create? \n1: checking account\n2: savings account\n3: checking and a savings account\n')
 
-# fname = input('please enter usre fist  name: ')
-# lname = input('please enter usre last  name: ')
-# password = input('please enter usre password: ')
-# user = Customer(new_account, fname, lname, password)
-# user.add_customer(user.account_type ,user.first_name,user.last_name,user.password)
-
-
-# user = Customer(1, "noura", "almutairi", "12345")
-# account = input("do you have account? y/n")
 
 try:
+    # new_acc = input('what kind of account you want to create? \n1: checking account\n2: savings account\n3: checking and a savings account\n')
 
-    d = Deposit('james', 'taylor', 'idh')
+    # fname = input('please enter usre fist  name: ')
+    # lname = input('please enter usre last  name: ')
+    # password = input('please enter usre password: ')
+    # user = Customer(fname, lname, password)
+    # user.add_customer(user)
+
+
+    # user = Customer(1, "noura", "almutairi", "12345")
+    # account = input("do you have account? y/n")
+
+
+    d = Withdraw('james', 'taylor', 'idh')
     d.log_in()
-    # print(d.is_logged_in)
-    d.deposit()
+
+    while True:
+        # print(d.is_logged_in)
+        d.Withdraw_operation()
 
 except LoggedInError:
     print("you need to log in first!")
 
-# first_name': 'james',  'last_name': 'taylor','password': 'id
+except ActivationError:
+    print("you account is deactivate!")
+
+
 
 
 
