@@ -1,6 +1,6 @@
-account_id,first_name,last_name,password,balance_checking,balance_savings
-10001,suresh,sigera,1234,1000,10000
-10002,james,taylor,idh36%@#FGd,10000,10000
-0,noura,almutairi,1234,0,
-0,qw,12,1223,,0
-79718,qwe,123,1234,0,0
+account_id,first_name,last_name,password,checking,savings
+10001,suresh,sigera,1234,120.0,14999.0
+10002,james,taylor,idh,10000.0,10000.0
+10003,melvin,gordon,uYWE732g4ga1,2000.0,20000.0
+10004,stacey,abrams,DEU8_qw3y72$,2000.0,20000.0
+10005,jake,paul,d^dg23g)@,100000.0,100000.0
