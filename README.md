@@ -17,7 +17,7 @@ Saudi Bank is a comprehensive banking system designed to provide users with esse
  functionality | Description |
 | --- | --- |
 | Create Account | The user can create an account by entering their username, first name, last name, and password. This function also lets the user choose the type of account they want to create: checking, savings, or both.|
-| Log In | The user can log in to their account by entering the username and password. |
+| Log In | The user can log in to their account by entering the first name and password. |
 | Log Out | The user can log out and return to the welcome page. |
 | Deposit | The user can enter the amount they want to deposit, and it will be saved in the database. |
 | Withdraw | The user can enter the amount they want to withdraw by selecting the account from which they wish to withdraw. This process also ensures that the user cannot withdraw more than $100 in a single transaction. If the user attempts to withdraw an amount greater than their balance, a fine will be applied. Additionally, the account will be deactivated if the user fails to pay the debt they owe.|

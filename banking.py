@@ -4,6 +4,7 @@ import pandas as pd
 import csv
 import os
 import random
+import datetime
 
 from errors import LoggedInError, ActivationError
 
@@ -18,32 +19,13 @@ customer_accounts = [
 
 fieldnames = ["account_id", "active", "first_name", "last_name", "password", "checking", "savings", "overdraft"]
 
+fieldnames_trans = ["transaction_id", "transaction_type", "amount", "date", "balance"]
 
-def open_banck():
 
-    if not os.path.exists("./banck.csv"):
-        with open("./banck.csv", 'w', newline='') as csvfile:
-            try:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                for row in customer_accounts:
-                    writer.writerow(row)
-            except csv.Error as e:
-                print(e)
 
-    # df = pd.read_csv("banck.csv")
-    # print(df,  "32")
-    # 4.0 If Exists - ReadFile Banck / Rows:
-    try: 
-        with open("banck.csv", "r") as file:
-            contents = csv.DictReader(file)
-            data = [row for row in contents]
 
-    except csv.Error as e:
-        print(e)
-
-if not os.path.exists("./transaction_history.csv"):
-    with open("./transaction_history.csv", 'w', newline='') as csvfile:
+if not os.path.exists("./banck.csv"):
+    with open("./banck.csv", 'w', newline='') as csvfile:
         try:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -51,10 +33,28 @@ if not os.path.exists("./transaction_history.csv"):
                 writer.writerow(row)
         except csv.Error as e:
             print(e)
+
+# 4.0 If Exists - ReadFile Banck / Rows:
+try: 
+    with open("banck.csv", "r") as file:
+        contents = csv.DictReader(file)
+        data = [row for row in contents]
+
+except csv.Error as e:
+        print(e)
+
+if not os.path.exists("./transaction_history.csv"):
+    with open("./transaction_history.csv", 'w', newline='') as csvfile:
+        try:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames_trans)
+            writer.writeheader()
+                # writer.writerow(row)
+        except csv.Error as e:
+            print(e)
 try: 
     with open("transaction_history.csv", "r") as file:
         contents = csv.DictReader(file)
-        data = [row for row in contents]
+        trans_data = [row for row in contents]
 
 except csv.Error as e:
     print(e)
@@ -93,7 +93,7 @@ class Customer:
         fname = input('fist  name: ')
         lname = input('last  name: ')
         password = input('usre password: ')
-        new_row = {'account_id': str  (self.account_id),
+        new_row = {'account_id': str (self.account_id),
             'active' : True,
             'first_name': fname,
             'last_name': lname,
@@ -115,13 +115,9 @@ class Customer:
         data.append(new_row)
         self.update_csv()
         return print("Your account has been created successfully.")
-
-
-    # def add_money(self):
-    #     Bank.add_money()
     
     def log_out(self):
-        user = input("do you want to log out? yes / no")
+        user = input("do you want to log out? yes / no : ")
         if user == 'yes':
             print('have a good day')
             self.is_logged_in = False
@@ -141,15 +137,11 @@ class Customer:
     def update_csv(self):
 
         try: 
-            # with open("banck.csv", "r") as file:
-            #     contents = csv.DictReader(file)
-
             with open("./banck.csv", 'w', newline='') as csvfile:
                 # print("we are changing the csv 140")
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
                 for row in data:
-                    print(row)
                     writer.writerow(row)
         except csv.Error as e:
             print(e)
@@ -165,13 +157,14 @@ class Bank(Customer):
         
         for user in data:
             if user['account_id'] == self.current_useer:
-                acct_types = { "1": "checking", "2": "savings", "3": "ther Account" }
+                acct_types = { "1": "checking", "2": "savings", "3": "Other Account" }
+
                 try: 
                     #check account activation
                     if user['active'] == 'False':
                         raise ActivationError
                 except ActivationError:
-                    print("Your account is deactivate!")
+                    print("You account is deactivate!")
                     return
 
                 while True:
@@ -299,7 +292,6 @@ class Bank(Customer):
                 withdraw_from = None
                 while True:
                     withdraw_from = input(f"Withdraw from (1) {withdraw_type["1"]} or (2) {withdraw_type["2"]}? ")
-                    print('account type', withdraw_type[withdraw_from])
                     if withdraw_from != "1" and withdraw_from != "2":
                         print("Please choose '1' or '2'")
                         continue
@@ -362,12 +354,27 @@ class Bank(Customer):
                         print("Deposit successful! Updated balance:", user)
                         return
 
+    def display_transaction_data(self):
+        # chechk log in
+        if self.check_logged_in():
+            raise LoggedInError
+        
+        for user in data:
+            if user['account_id'] == self.current_useer:
+                date = datetime.datetime.now()
+
+                new_row = {'transaction_id': random.randint(1000, 9999),
+                    'transaction_type' : "dd",
+                    'amount': 'fname',
+                    'date': date,
+                    'balance': user['account_id'],
+                }
+                trans_data.append(new_row)
 
 try:
 
-    open_banck()
-    d = Bank()
 
+    d = Bank()
     while True:
         print("Welcome to the Saudi Bank!")
         choise = input("(1) Log in\n(2) Creat account\n(3) Quit your\nYour chooise is: ")
@@ -384,7 +391,7 @@ try:
                     d.withdraw()
                     continue
                 elif user_input == '3':
-                    d.transfer_operation()
+                    d.transfer()
                     continue
                 elif user_input == '4':
                     d.log_out()
@@ -398,8 +405,6 @@ try:
         else:
             print("Invaled secection try again!")
             continue
-
-
 
 except LoggedInError:
     print("you need to log in first!")

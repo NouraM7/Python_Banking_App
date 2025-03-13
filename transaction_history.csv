@@ -1,6 +1,1 @@
-account_id,active,first_name,last_name,password,checking,savings,overdraft
-10001,True,suresh,sigera,1234,60.0,10000.0,0
-10002,True,james,taylor,idh,10000.0,10000.0,0
-10003,True,melvin,gordon,uYWE732g4ga1,2000.0,20000.0,0
-10004,True,stacey,abrams,DEU8_qw3y72$,2000.0,20000.0,0
-10005,True,jake,paul,d^dg23g)@,100000.0,100000.0,0
+account_id,transaction_type,amount,date,balance
