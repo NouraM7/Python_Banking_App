@@ -19,9 +19,31 @@ customer_accounts = [
 fieldnames = ["account_id", "active", "first_name", "last_name", "password", "checking", "savings", "overdraft"]
 
 
+def open_banck():
 
-if not os.path.exists("./banck.csv"):
-    with open("./banck.csv", 'w', newline='') as csvfile:
+    if not os.path.exists("./banck.csv"):
+        with open("./banck.csv", 'w', newline='') as csvfile:
+            try:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for row in customer_accounts:
+                    writer.writerow(row)
+            except csv.Error as e:
+                print(e)
+
+    # df = pd.read_csv("banck.csv")
+    # print(df,  "32")
+    # 4.0 If Exists - ReadFile Banck / Rows:
+    try: 
+        with open("banck.csv", "r") as file:
+            contents = csv.DictReader(file)
+            data = [row for row in contents]
+
+    except csv.Error as e:
+        print(e)
+
+if not os.path.exists("./transaction_history.csv"):
+    with open("./transaction_history.csv", 'w', newline='') as csvfile:
         try:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -29,15 +51,8 @@ if not os.path.exists("./banck.csv"):
                 writer.writerow(row)
         except csv.Error as e:
             print(e)
-# else:
-#     #change customer data to the values in the csv
-    #You can turn the CSV into a dictionary, and then assign that dictionary to data
-
-df = pd.read_csv("banck.csv")
-print(df,  "32")
-# 4.0 If Exists - ReadFile / Rows:
 try: 
-    with open("banck.csv", "r") as file:
+    with open("transaction_history.csv", "r") as file:
         contents = csv.DictReader(file)
         data = [row for row in contents]
 
@@ -126,14 +141,15 @@ class Customer:
     def update_csv(self):
 
         try: 
-            with open("banck.csv", "r") as file:
-                contents = csv.DictReader(file)
+            # with open("banck.csv", "r") as file:
+            #     contents = csv.DictReader(file)
 
             with open("./banck.csv", 'w', newline='') as csvfile:
                 # print("we are changing the csv 140")
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
                 for row in data:
+                    print(row)
                     writer.writerow(row)
         except csv.Error as e:
             print(e)
@@ -141,7 +157,7 @@ class Customer:
 
 class Bank(Customer):
 
-    def Transfer_operation(self):
+    def transfer(self):
 
         #chechk log in
         if self.check_logged_in():
@@ -149,13 +165,21 @@ class Bank(Customer):
         
         for user in data:
             if user['account_id'] == self.current_useer:
-                acct_types = { "1": "checking", "2": "savings", "3": "Other Account" }
+                acct_types = { "1": "checking", "2": "savings", "3": "ther Account" }
+                try: 
+                    #check account activation
+                    if user['active'] == 'False':
+                        raise ActivationError
+                except ActivationError:
+                    print("Your account is deactivate!")
+                    return
 
                 while True:
                     trans_from = input(f"Would you like to transfer from (1) {acct_types["1"]}, (2) {acct_types["2"]}?")
                     if trans_from not in ["1","2"]:
                         print("Invalid selection! try again")
                         continue
+
                     #check if the user have the account
                     if user.get(acct_types[trans_from]) == '':
                         print ("There is no account, try again")
@@ -168,7 +192,8 @@ class Bank(Customer):
                         print("Invalid selection! try again")
                         continue
 
-                    if user.get(acct_types[trans_to]) == '':#check if the user have the account
+                    #check if the user have the account
+                    if user.get(acct_types[trans_to]) == '':
                         print ("There is no account, try again")
                         continue 
                     break
@@ -222,16 +247,6 @@ class Bank(Customer):
 
         for user in data:
             if user['account_id'] == self.current_useer:
-
-                # try: #check account activation
-                #     # print(self.check_activation(user['active']))
-                #     print(user['active'])
-                #     print(self.check_activation(user['active']))
-                #     if self.check_activation(user['active']):
-                #         raise ActivationError
-                # except ActivationError:
-                #     print("you account is deactivate!")
-                #     return
                 
                 deposit_types = { "1": "checking", "2": "savings" }
 
@@ -244,21 +259,25 @@ class Bank(Customer):
                         print ("There is no account, try again")
                         continue
                     break
-
-                # curr_balece = user[deposit_types[deposit_to]]
                 
                 deposit_amt = None
                 while type(deposit_amt): 
                     deposit_amt = float(input("Enter the amount of mony to be deposit: "))
                     if self.is_float(deposit_amt):
+                        curr_amt = float(user[deposit_types[deposit_to]]) + deposit_amt
                         user[deposit_types[deposit_to]] =  str(float(user[deposit_types[deposit_to]]) + deposit_amt)
+                        print(curr_amt, type(curr_amt), type(0), "line 254")
+                        if curr_amt >= 0:
+                            print('line 256')
+                            user['active'] = 'True'
+                            user['overdraft'] = '0'
                         self.update_csv() 
                         print("Deposit successful!")
                         return
                     else:
                         print("Please enter an actual number.")
 
-    def withdraw_operation(self):
+    def withdraw(self):
 
         #chechk log in
         if self.check_logged_in():
@@ -346,31 +365,26 @@ class Bank(Customer):
 
 try:
 
+    open_banck()
     d = Bank()
 
-    # d.log_in()
-    # d.deposit()
-
-    # d.withdraw_operation()
     while True:
-        print("welcome to the bank system!")
-        choise = input("(1) Log in\n(2) creat account\n your chooise is: ")
+        print("Welcome to the Saudi Bank!")
+        choise = input("(1) Log in\n(2) Creat account\n(3) Quit your\nYour chooise is: ")
 
         if choise == '1':
             d.log_in()
-            # if d.check_logged_in():
-            #     raise LoggedInError
             while True:
                 print("\nchoos operation:\n")
-                user_input = input("(1) deposit\n(2)withdraw\n(3)transfar\n(4)log out\n your chooise is: ")
+                user_input = input("(1) Deposit\n(2) Withdraw\n(3) Transfer\n(4) Log out\n Your chooise is: ")
                 if user_input == '1':
                     d.deposit()
                     continue
                 elif  user_input == '2':
-                    d.withdraw_operation()
+                    d.withdraw()
                     continue
                 elif user_input == '3':
-                    d.Transfer_operation()
+                    d.transfer_operation()
                     continue
                 elif user_input == '4':
                     d.log_out()
@@ -379,7 +393,7 @@ try:
             d.add_customer()
             continue
         elif choise == '3':
-            print("have a good day")
+            print("Have a good day")
             break
         else:
             print("Invaled secection try again!")
